@@ -7,6 +7,7 @@ setup(name="pubmarine",
         author_email="toshio@fedoraproject.org",
         maintainer="Toshio Kuratomi",
         maintainer_email="toshio@fedoraproject.org",
+        url="https://github.com/abadger/pubmarine",
         license="Lesser GNU Public License v3+",
         keywords='pubsub events',
         classifiers=[
