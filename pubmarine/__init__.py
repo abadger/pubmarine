@@ -24,6 +24,7 @@ Authors: Toshio Kuratomi <toshio@fedoraproject.org
 __version__ = '0.1'
 __version_info__ = ('0', '1')
 
+import warnings
 from collections import defaultdict
 from weakref import WeakMethod, ref
 
@@ -56,6 +57,9 @@ class PubPen:
             lists provide protection against typos.
         """
         self.loop = loop
+        self._next_id = self._id_generator()
+        self._subscriptions = {}
+
         if event_list is not None:
             self._event_list = frozenset(event_list)
         else:
@@ -63,11 +67,17 @@ class PubPen:
 
         self._event_handlers = defaultdict(set)
 
+    def _id_generator(self):
+        i = 0
+        while True:
+            yield i
+            i += 1
+
     def subscribe(self, event, callback):
         """ Subscribe a callback to an event
 
         :arg event: String name of an event to subscribe to
-        :callback: The function to call when the event is emitted.  This can
+        :callback: The function to call when the event is published.  This can
             be any python callable.
 
         Use :func:`functools.partial` to call the callback with any other
@@ -77,17 +87,42 @@ class PubPen:
         if self._event_list and event not in self._event_list:
             raise EventNotFoundError('{} is not a registered event' \
                     .format(event))
+
+        # Get an id for the subscription
+        sub_id = next(self._next_id)
+
+        self._subscriptions[sub_id] = event
         try:
             # Add a method
-            self._event_handlers[event].add(WeakMethod(callback))
+            self._event_handlers[event].add((sub_id, WeakMethod(callback)))
         except TypeError:
             # Add a function
-            self._event_handlers[event].add(ref(callback))
+            self._event_handlers[event].add((sub_id, ref(callback)))
 
-    def emit(self, event, *args, **kwargs):
-        """ Emit an event
+        return sub_id
 
-        :arg event: String name of an event to emit
+    def unsubscribe(self, sub_id):
+        """Unsubscribe from an event.
+
+        :arg sub_id: The subscription id returned from subscribe.
+        """
+        if sub_id in self._subscriptions:
+            event = self._subscriptions[sub_id]
+        else:
+            # It's okay, we just want the subscription to be gone
+            return
+
+        for cur_sub_id, handler in self._event_handlers[event]:
+            if cur_sub_id == sub_id:
+                self._event_handlers[event].discard((sub_id, handler))
+                break
+
+        del self._subscriptions[sub_id]
+
+    def publish(self, event, *args, **kwargs):
+        """ Publish an event
+
+        :arg event: String name of an event to publish
 
         Other args and keyword args are passed to the callback function.
         """
@@ -96,7 +131,7 @@ class PubPen:
                     .format(event))
 
         gone = []
-        for handler in self._event_handlers[event]:
+        for sub_id, handler in self._event_handlers[event]:
             # Get the callback from the weakref
             func = handler()
             if func is None:
@@ -107,4 +142,22 @@ class PubPen:
 
         # Cleanup any handlers that are no longer around
         for handler in gone:
-            self._event_handlers[event].discard(handler)
+            self._event_handlers[event].discard((sub_id, handler))
+            try:
+                del self._subscriptions[sub_id]
+            except KeyError:
+                # It's okay.  We just want this gone.
+                pass
+
+    def emit(self, event, *args, **kwargs):
+        """ Publish an event
+
+        :arg event: String name of an event to publish
+
+        Other args and keyword args are passed to the callback function.
+
+        **Deprecated**: Use publish() instead
+        """
+        warnings.warn('PubPen.emit() is deprecated.  Use PubPen.publish()'
+                ' instead', DeprecationWarning, stacklevel=2)
+        self.publish(event, *args, **kwargs)

@@ -1,0 +1,9 @@
+---
+features:
+  - Added the ability to unsubscribe from an event.
+    :meth:`PubPen.subscribe` now returns a subscription_id that may be used
+    with the new method, :meth:`PubPen.unsubscribe` to stop getting notified
+    about an event.
+deprecations:
+  - :meth:`PubPen.emit` has been deprecated.  It has been renamed to
+    :meth:`PubPen.publish` to better match with :meth:`PubPen.subscribe`
