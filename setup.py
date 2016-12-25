@@ -4,7 +4,7 @@ setup(name="pubmarine",
         version="0.3",
         description="An event dispatcher based on the PubSub pattern for Python-3.5's asyncio",
         long_description="""
-This module implements and event dispatcher based on the publish-subscribe
+This module implements an event dispatcher based on the publish-subscribe
 pattern using asyncio.  It is akin to the QT library's signals and slots
 mechanism.  Pubmarine's PubSub is intended for asynchronous signalling within
 an application.  It is not meant for communicating with other programs over
