@@ -1,3 +1,9 @@
+.. image:: https://travis-ci.org/abadger/pubmarine.svg?branch=master
+    :target: https://travis-ci.org/abadger/pubmarine
+
+.. image:: https://coveralls.io/repos/github/abadger/pubmarine/badge.svg?branch=master
+    :target: https://coveralls.io/github/abadger/pubmarine?branch=master
+
 =========
 Pubmarine
 =========
