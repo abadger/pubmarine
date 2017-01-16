@@ -16,7 +16,7 @@ In IO bound code.
 
 
 Simple Example
---------------
+==============
 
 Here's a very simple example to get you started::
 
@@ -66,7 +66,26 @@ of its own to the screen to show that both the server and the client
 coroutines are getting serviced.
 
 Requirements
-------------
+============
 
 Pubmarine requires Python-3.5.0 or greater.  It does not require anything
 outside of the Python stdlib to function.
+
+Contributors
+============
+
+Things to know if you're contributing to pubmarine:
+
+Testing Pubmarine
+-----------------
+
+To run the unittests for pubmarine:
+
+.. code-block:: shell-session
+
+    python3 -m pip install --user -r test-requirements.txt
+    python3 -m pip install --user -e .
+    pytest --cov=pubmarine tests
+
+You can, of course, use a virtualenv instead of ``--user`` to install the
+dependencies.
