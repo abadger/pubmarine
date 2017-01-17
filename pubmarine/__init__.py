@@ -1,6 +1,6 @@
 # This file is part of PubMarine.
 #
-# Foobar is free software: you can redistribute it and/or modify
+# PubMarine is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -11,7 +11,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+# along with PubMarine.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright: 2017, Toshio Kuratomi
 # License: LGPLv3+
@@ -83,6 +83,23 @@ class PubPen:
         Use :func:`functools.partial` to call the callback with any other
         arguments.
 
+        .. note:: The callback is registered with the event each time this
+            method is called.  The callback is called each time it has been
+            registered when the event is published.  For example::
+
+                >>> import asyncio
+                >>> import pubmarine
+                >>> pubpen = pubmarine.PubPen(asyncio.get_event_loop)
+                >>> def message():
+                ...     print('message called')
+                >>> pubpen.subscribe('test', message)
+                >>> pubpen.subscribe('test', message)
+                >>> pubpen.publish('test')
+                message called
+                message called
+
+            If the caller wants the callback to only be called once, it is the
+            caller's responsibility to only subscribe the callbak once.
         """
         if self._event_list and event not in self._event_list:
             raise EventNotFoundError('{} is not a registered event' \
