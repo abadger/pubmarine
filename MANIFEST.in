@@ -2,4 +2,8 @@ include COPYING*
 include README*
 include NEWS
 include LICENSE
+include test-requirements.txt
+include .coveragerc
 include examples/*
+recursive-include tests/* *.py
+
