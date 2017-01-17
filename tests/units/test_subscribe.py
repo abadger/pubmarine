@@ -7,21 +7,25 @@ from pubmarine import PubPen
 
 
 @pytest.fixture
-def pubpen(request, event_loop):
+def pubpen(event_loop):
     pubpen = PubPen(event_loop)
     return pubpen
+
 
 @pytest.fixture
 def pubpen_predefined(event_loop):
     pubpen = PubPen(event_loop, event_list=['test_event1', 'test_event2'])
     return pubpen
 
+
 class Foo:
     def method(self):
         pass
 
+
 def function():
     pass
+
 
 class TestPubPenSubscribe:
 
@@ -135,27 +139,3 @@ class TestPubPenSubscribe:
         assert events[0][1] == weakref.ref(function)
         events = list(pubpen._event_handlers['test_event2'])
         assert events[0][1] == weakref.WeakMethod(foo.method)
-
-
-class TestPubPenUnsubscribe:
-
-    def test_unsubscribe_nonexisting(self):
-        pass
-
-    def test_unsubscribe_existing(self):
-        pass
-
-class TestPubPenPublish:
-    # Move these two to unittests
-    def test_publish_event_list_pass(self, pubpen_predefined):
-        pass
-
-    def test_publish_event_list_fail(self, pubpen_predefined):
-        pass
-
-
-class TestPubPenEmit:
-    # Move to unittest
-    def test_emit_warns(self, pubpen):
-        with pytest.warns(DeprecationWarning):
-            pubpen.emit('test_event')
