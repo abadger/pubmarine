@@ -1,4 +1,5 @@
 import asyncio
+from unittest import mock
 
 import pytest
 
@@ -8,6 +9,13 @@ from pubmarine import PubPen
 @pytest.fixture
 def pubpen(request, event_loop):
     pubpen = PubPen(event_loop)
+    return pubpen
+
+
+@pytest.fixture
+def pubpen_mocked(request, event_loop):
+    pubpen = PubPen(event_loop)
+    pubpen.loop.call_soon = mock.MagicMock()
     return pubpen
 
 
@@ -214,6 +222,64 @@ class TestFunctionalPublish:
             pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
             assert self.function1.called == 1 * iteration
             assert self.function2.called == 1 * iteration
+
+    def test_function_goes_away(self, pubpen):
+        foo = Function()
+        first = pubpen.subscribe('test_event1', foo)
+        assert foo.called == 0
+        del foo
+
+        pubpen.publish('test_event1')
+        pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+        pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+
+        # check internal state as I can't think of how to check this
+        # externally
+        assert len(pubpen._event_handlers['test_event1']) == 0
+        assert len(pubpen._subscriptions) == 0
+
+    def test_function_goes_away_mocked(self, pubpen_mocked):
+        foo = Function()
+        first = pubpen_mocked.subscribe('test_event1', foo)
+        assert foo.called == 0
+        del foo
+
+        pubpen_mocked.publish('test_event1')
+
+        # check internal state as I can't think of how to check this
+        # externally
+        assert pubpen_mocked.loop.call_soon.called is False
+        assert len(pubpen_mocked._event_handlers['test_event1']) == 0
+        assert len(pubpen_mocked._subscriptions) == 0
+
+    def test_method_goes_away(self, pubpen):
+        foo = Method()
+        first = pubpen.subscribe('test_event1', foo.method)
+        assert foo.called == 0
+        del foo
+
+        pubpen.publish('test_event1')
+        pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+        pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+
+        # check internal state as I can't think of how to check this
+        # externally
+        assert len(pubpen._event_handlers['test_event1']) == 0
+        assert len(pubpen._subscriptions) == 0
+
+    def test_method_goes_away_mocked(self, pubpen_mocked):
+        foo = Method()
+        first = pubpen_mocked.subscribe('test_event1', foo.method)
+        assert foo.called == 0
+        del foo
+
+        pubpen_mocked.publish('test_event1')
+
+        # check internal state as I can't think of how to check this
+        # externally
+        assert pubpen_mocked.loop.call_soon.called is False
+        assert len(pubpen_mocked._event_handlers['test_event1']) == 0
+        assert len(pubpen_mocked._subscriptions) == 0
 
 
 @pytest.mark.usefixtures('function1')

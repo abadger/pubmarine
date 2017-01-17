@@ -37,6 +37,13 @@ def pubpen_multi_callback(event_loop):
     return pubpen
 
 
+@pytest.fixture
+def pubpen_partially_dealloc(event_loop):
+    """The event handler has been partially removed already."""
+    pubpen = PubPen(event_loop)
+    pubpen._subscriptions[0] = 'test_event1'
+    return pubpen
+
 class Foo:
     def method(self):
         pass
@@ -106,3 +113,13 @@ class TestPubPenUnsubscribe:
         assert len(pubpen_multi_callback._event_handlers['test_event1']) == 2
         assert (0, 'handler1') in pubpen_multi_callback._event_handlers['test_event1']
         assert (1, 'handler2') in pubpen_multi_callback._event_handlers['test_event1']
+
+    def test_unsubscribe_partially_deallocated_handler(self, pubpen_partially_dealloc):
+        pubpenpd = pubpen_partially_dealloc
+        result = pubpenpd.unsubscribe(0)
+        assert result is None
+
+        # Test internal implementation is correct
+        assert len(pubpenpd._subscriptions) == 0
+        assert len(pubpenpd._event_handlers['test_event1']) == 0
+
