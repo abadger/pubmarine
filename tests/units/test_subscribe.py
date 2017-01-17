@@ -46,9 +46,9 @@ class TestPubPenSubscribe:
         assert pubpen._subscriptions[first] == 'test_event'
         assert len(pubpen._event_handlers['test_event']) == 1
 
-        event = next(iter(pubpen._event_handlers['test_event']))
-        assert event[0] == first
-        assert event[1] == weakref.ref(function)
+        event = pubpen._event_handlers['test_event']
+        assert list(event.keys()) == [first]
+        assert list(event.values()) == [weakref.ref(function)]
 
     def test_subscribe_method(self, pubpen):
         """Test that adding method callbacks succeed"""
@@ -59,9 +59,9 @@ class TestPubPenSubscribe:
         assert pubpen._subscriptions[first] == 'test_event'
         assert len(pubpen._event_handlers['test_event']) == 1
 
-        event = next(iter(pubpen._event_handlers['test_event']))
-        assert event[0] == first
-        assert event[1] == weakref.WeakMethod(foo.method)
+        event = pubpen._event_handlers['test_event']
+        assert list(event.keys()) == [first]
+        assert list(event.values()) == [weakref.WeakMethod(foo.method)]
 
     def test_in_event_list(self, pubpen_predefined):
         """Test that adding events that are in the event list succeeds"""
@@ -71,9 +71,9 @@ class TestPubPenSubscribe:
         assert pubpen_predefined._subscriptions[first] == 'test_event1'
         assert len(pubpen_predefined._event_handlers['test_event1']) == 1
 
-        event = next(iter(pubpen_predefined._event_handlers['test_event1']))
-        assert event[0] == first
-        assert event[1] == weakref.ref(function)
+        event = pubpen_predefined._event_handlers['test_event1']
+        assert list(event.keys()) == [first]
+        assert list(event.values()) == [weakref.ref(function)]
 
     def test_not_in_event_list(self, pubpen_predefined):
         """Test that we raise an error when adding an event not in the event list"""
@@ -90,9 +90,9 @@ class TestPubPenSubscribe:
         assert pubpen._subscriptions[second] == 'test_event'
         assert len(pubpen._event_handlers['test_event']) == 2
 
-        events = list(pubpen._event_handlers['test_event'])
-        assert events[0][1] == weakref.ref(function)
-        assert events[1][1] == weakref.ref(function)
+        events = pubpen._event_handlers['test_event']
+        assert events[first] == weakref.ref(function)
+        assert events[second] == weakref.ref(function)
 
     def test_subscribe_same_callback_diff_event(self, pubpen):
         first = pubpen.subscribe('test_event1', function)
@@ -104,10 +104,10 @@ class TestPubPenSubscribe:
         assert len(pubpen._event_handlers['test_event1']) == 1
         assert len(pubpen._event_handlers['test_event2']) == 1
 
-        events = list(pubpen._event_handlers['test_event1'])
-        assert events[0][1] == weakref.ref(function)
-        events = list(pubpen._event_handlers['test_event2'])
-        assert events[0][1] == weakref.ref(function)
+        events = pubpen._event_handlers['test_event1']
+        assert events[first] == weakref.ref(function)
+        events = pubpen._event_handlers['test_event2']
+        assert events[second] == weakref.ref(function)
 
     def test_subscribe_diff_callback_same_event(self, pubpen):
         first = pubpen.subscribe('test_event', function)
@@ -119,10 +119,10 @@ class TestPubPenSubscribe:
         assert pubpen._subscriptions[second] == 'test_event'
         assert len(pubpen._event_handlers['test_event']) == 2
 
-        events = list(pubpen._event_handlers['test_event'])
-        assert events[0][1] != events[1][1]
-        assert events[0][1] in (weakref.ref(function), weakref.WeakMethod(foo.method))
-        assert events[1][1] in (weakref.ref(function), weakref.WeakMethod(foo.method))
+        events = pubpen._event_handlers['test_event']
+        assert events[first] != events[second]
+        assert events[first] in (weakref.ref(function), weakref.WeakMethod(foo.method))
+        assert events[second] in (weakref.ref(function), weakref.WeakMethod(foo.method))
 
     def test_subscribe_diff_callback_diff_event(self, pubpen):
         first = pubpen.subscribe('test_event1', function)
@@ -135,7 +135,7 @@ class TestPubPenSubscribe:
         assert len(pubpen._event_handlers['test_event1']) == 1
         assert len(pubpen._event_handlers['test_event2']) == 1
 
-        events = list(pubpen._event_handlers['test_event1'])
-        assert events[0][1] == weakref.ref(function)
-        events = list(pubpen._event_handlers['test_event2'])
-        assert events[0][1] == weakref.WeakMethod(foo.method)
+        events = pubpen._event_handlers['test_event1']
+        assert events[first] == weakref.ref(function)
+        events = pubpen._event_handlers['test_event2']
+        assert events[second] == weakref.WeakMethod(foo.method)

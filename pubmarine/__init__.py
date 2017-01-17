@@ -65,7 +65,7 @@ class PubPen:
         else:
             self._event_list = frozenset()
 
-        self._event_handlers = defaultdict(set)
+        self._event_handlers = defaultdict(dict)
 
     def _id_generator(self):
         i = 0
@@ -111,10 +111,10 @@ class PubPen:
         self._subscriptions[sub_id] = event
         try:
             # Add a method
-            self._event_handlers[event].add((sub_id, WeakMethod(callback)))
+            self._event_handlers[event][sub_id] = WeakMethod(callback)
         except TypeError:
             # Add a function
-            self._event_handlers[event].add((sub_id, ref(callback)))
+            self._event_handlers[event][sub_id] = ref(callback)
 
         return sub_id
 
@@ -129,9 +129,9 @@ class PubPen:
             # It's okay, we just want the subscription to be gone
             return
 
-        for cur_sub_id, handler in self._event_handlers[event]:
+        for cur_sub_id in self._event_handlers[event]:
             if cur_sub_id == sub_id:
-                self._event_handlers[event].discard((sub_id, handler))
+                del self._event_handlers[event][sub_id]
                 break
 
         del self._subscriptions[sub_id]
@@ -147,19 +147,19 @@ class PubPen:
             raise EventNotFoundError('{} is not a registered event' \
                     .format(event))
 
-        gone = []
-        for sub_id, handler in self._event_handlers[event]:
+        removed_sub_ids = []
+        for sub_id, handler in self._event_handlers[event].items():
             # Get the callback from the weakref
             func = handler()
             if func is None:
                 # Callback was deleted.  Cleanup the weakref as well
-                gone.append(handler)
+                removed_sub_ids.append(sub_id)
                 continue
             self.loop.call_soon(func, *args, **kwargs)
 
         # Cleanup any handlers that are no longer around
-        for handler in gone:
-            self._event_handlers[event].discard((sub_id, handler))
+        for sub_id in removed_sub_ids:
+            del self._event_handlers[event][sub_id]
             try:
                 del self._subscriptions[sub_id]
             except KeyError:

@@ -1,0 +1,6 @@
+---
+fixes:
+  - In some circumstances, callbacks which had been deallocated in the main
+    program were not being removed from the event_handler list.  This could
+    lead to a small inefficiency as PubPen.publish() would continue to attempt
+    to call them even though they were already removed.

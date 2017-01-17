@@ -24,9 +24,9 @@ def handler_None():
 def pubpen(event_loop):
     pubpen = PubPen(event_loop)
     pubpen.loop = mock.MagicMock()
-    pubpen._event_handlers['test_event1'].add((0, handler1))
-    pubpen._event_handlers['test_event2'].add((1, handler2))
-    pubpen._event_handlers['test_event2'].add((2, handler3))
+    pubpen._event_handlers['test_event1'][0] = handler1
+    pubpen._event_handlers['test_event2'][1] = handler2
+    pubpen._event_handlers['test_event2'][2] = handler3
     return pubpen
 
 
@@ -50,8 +50,8 @@ def pubpen_handlers_dealloc(event_loop):
     pubpen.loop = mock.MagicMock()
     pubpen._subscriptions[0] = 'test_event1'
     pubpen._subscriptions[1] = 'test_event1'
-    pubpen._event_handlers['test_event1'].add((0, handler1))
-    pubpen._event_handlers['test_event1'].add((1, handler_None))
+    pubpen._event_handlers['test_event1'][0] = handler1
+    pubpen._event_handlers['test_event1'][1] = handler_None
     return pubpen
 
 
@@ -64,8 +64,8 @@ def pubpen_handlers_partially_removed(event_loop):
     pubpen = PubPen(event_loop)
     pubpen.loop = mock.MagicMock()
     pubpen._subscriptions[0] = 'test_event1'
-    pubpen._event_handlers['test_event1'].add((0, handler1))
-    pubpen._event_handlers['test_event1'].add((1, handler_None))
+    pubpen._event_handlers['test_event1'][0] = handler1
+    pubpen._event_handlers['test_event1'][1] = handler_None
     return pubpen
 
 
