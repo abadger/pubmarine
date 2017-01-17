@@ -11,12 +11,18 @@ def pubpen(request, event_loop):
     return pubpen
 
 
+class Method:
+    def __init__(self):
+        self.called = 0
+
+    def method(self):
+        self.called += 1
+
 class Function:
     def __init__(self):
         self.called = 0
 
     def __call__(self, *args):
-        print('here')
         self.called += 1
 
 
@@ -32,6 +38,22 @@ def function2(request):
 
 @pytest.mark.usefixtures('function1', 'function2')
 class TestFunctionalPublish:
+
+    def test_one_event_one_method_callback(self, pubpen):
+        """
+        One event registered, one method (rather than function) callback registered
+
+        Yields callback called once each time event is published.
+        """
+        foo = Method()
+        first = pubpen.subscribe('test_event', foo.method)
+        assert foo.called == 0
+
+        for iteration in range(1, 3):
+            pubpen.publish('test_event')
+            pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+            pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+            assert foo.called == 1 * iteration
 
     def test_one_event_one_callback(self, pubpen):
         """
