@@ -16,7 +16,6 @@ class Function:
         self.called = 0
 
     def __call__(self, *args):
-        print('here')
         self.called += 1
 
 
