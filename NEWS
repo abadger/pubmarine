@@ -2,6 +2,21 @@
 Release Notes
 =============
 
+0.3-12
+======
+
+Bug Fixes
+---------
+
+- In some circumstances, callbacks which had been deallocated in the main program were not being removed from the event_handler list.  This could lead to a small inefficiency as PubPen.publish() would continue to attempt to call them even though they were already removed.
+
+
+Other Notes
+-----------
+
+- Added unittests to prevent regressions
+
+
 0.3
 ===
 

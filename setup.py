@@ -1,7 +1,9 @@
 from distutils.core import setup
 
+import pubmarine
+
 setup(name="pubmarine",
-        version="0.3",
+        version=pubmarine.__version__,
         description="An event dispatcher based on the PubSub pattern for Python-3.5's asyncio",
         long_description="""
 This module implements an event dispatcher based on the publish-subscribe
@@ -18,7 +20,7 @@ the network.
         license="Lesser GNU Public License v3+",
         keywords='pubsub events',
         classifiers=[
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
             'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
             'Operating System :: OS Independent',
