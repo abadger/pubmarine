@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+0.4-1
+=====
+
+Bug Fixes
+---------
+
+- Fix a traceback when calling callbacks with keyword arguments.  Keyword arguments to callbacks would not have worked at all prior to this.
+
+
 0.4
 ===
 

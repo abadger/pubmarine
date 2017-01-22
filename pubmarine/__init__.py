@@ -21,8 +21,8 @@ PubMarine is a simple PubSub framework for Python3's asyncio.
 Authors: Toshio Kuratomi <toshio@fedoraproject.org
 """
 
-__version__ = '0.4'
-__version_info__ = ('0', '4')
+__version__ = '0.4.1'
+__version_info__ = ('0', '4', '1')
 
 import warnings
 from collections import defaultdict
