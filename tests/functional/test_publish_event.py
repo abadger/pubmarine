@@ -22,16 +22,24 @@ def pubpen_mocked(request, event_loop):
 class Method:
     def __init__(self):
         self.called = 0
+        self.args = None
+        self.kwargs = None
 
-    def method(self):
+    def method(self, *args, **kwargs):
         self.called += 1
+        self.args = args
+        self.kwargs = kwargs
 
 class Function:
     def __init__(self):
         self.called = 0
+        self.args = None
+        self.kwargs = None
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         self.called += 1
+        self.args = args
+        self.kwargs = kwargs
 
 
 @pytest.fixture
@@ -222,6 +230,49 @@ class TestFunctionalPublish:
             pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
             assert self.function1.called == 1 * iteration
             assert self.function2.called == 1 * iteration
+
+    def test_callback_with_args(self, pubpen):
+        """
+        Publishing with arguments sends the arguments to the callback
+        """
+        first = pubpen.subscribe('test_event', self.function1)
+        assert self.function1.called == 0
+
+        for iteration in range(1, 3):
+            pubpen.publish('test_event', iteration)
+            pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+            pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+            assert self.function1.called == 1 * iteration
+            assert self.function1.args == (iteration,)
+
+    def test_callback_with_kwargs(self, pubpen):
+        """
+        Publishing with keyword arguments sends the arguments to the callback
+        """
+        first = pubpen.subscribe('test_event', self.function1)
+        assert self.function1.called == 0
+
+        for iteration in range(1, 3):
+            pubpen.publish('test_event', test_no=iteration)
+            pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+            pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+            assert self.function1.called == 1 * iteration
+            assert self.function1.kwargs == {'test_no': iteration}
+
+    def test_callback_with_args_and_kwargs(self, pubpen):
+        """
+        Publishing with positional and keyword arguments sends the arguments to the callback
+        """
+        first = pubpen.subscribe('test_event', self.function1)
+        assert self.function1.called == 0
+
+        for iteration in range(1, 3):
+            pubpen.publish('test_event', iteration, test_no=iteration)
+            pending = asyncio.Task.all_tasks(loop=pubpen.loop)
+            pubpen.loop.run_until_complete(asyncio.gather(*pending, loop=pubpen.loop))
+            assert self.function1.called == 1 * iteration
+            assert self.function1.args == (iteration,)
+            assert self.function1.kwargs == {'test_no': iteration}
 
     def test_function_goes_away(self, pubpen):
         foo = Function()

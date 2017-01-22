@@ -1,0 +1,4 @@
+---
+fixes:
+  - Fix a traceback when calling callbacks with keyword arguments.  Keyword
+    arguments to callbacks would not have worked at all prior to this.

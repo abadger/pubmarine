@@ -16,17 +16,16 @@ def handler3():
     return 'handler3'
 
 
-def handler_None():
-    return None
-
-
 @pytest.fixture
 def pubpen(event_loop):
     pubpen = PubPen(event_loop)
     pubpen.loop = mock.MagicMock()
-    pubpen._event_handlers['test_event1'][0] = handler1
-    pubpen._event_handlers['test_event2'][1] = handler2
-    pubpen._event_handlers['test_event2'][2] = handler3
+    # In the real code, we store a weakref to the handlers.  We use lambda
+    # here to wrape the actual handler once to emulate the aspects of the
+    # weakref that are important to this test
+    pubpen._event_handlers['test_event1'][0] = lambda: handler1
+    pubpen._event_handlers['test_event2'][1] = lambda: handler2
+    pubpen._event_handlers['test_event2'][2] = lambda: handler3
     return pubpen
 
 
@@ -50,8 +49,13 @@ def pubpen_handlers_dealloc(event_loop):
     pubpen.loop = mock.MagicMock()
     pubpen._subscriptions[0] = 'test_event1'
     pubpen._subscriptions[1] = 'test_event1'
-    pubpen._event_handlers['test_event1'][0] = handler1
-    pubpen._event_handlers['test_event1'][1] = handler_None
+    # In the real code, we store a weakref to the handlers.  We use lambda
+    # here to wrape the actual handler once to emulate the aspects of the
+    # weakref that are important to this test
+    pubpen._event_handlers['test_event1'][0] = lambda: handler1
+    # But this one represents a weakref where the target has been deallocated.
+    # In that case, calling the weakref returns None
+    pubpen._event_handlers['test_event1'][1] = lambda: None
     return pubpen
 
 
@@ -64,8 +68,13 @@ def pubpen_handlers_partially_removed(event_loop):
     pubpen = PubPen(event_loop)
     pubpen.loop = mock.MagicMock()
     pubpen._subscriptions[0] = 'test_event1'
-    pubpen._event_handlers['test_event1'][0] = handler1
-    pubpen._event_handlers['test_event1'][1] = handler_None
+    # In the real code, we store a weakref to the handlers.  We use lambda
+    # here to wrape the actual handler once to emulate the aspects of the
+    # weakref that are important to this test
+    pubpen._event_handlers['test_event1'][0] = lambda: handler1
+    # But this one represents a weakref where the target has been deallocated.
+    # In that case, calling the weakref returns None
+    pubpen._event_handlers['test_event1'][1] = lambda: None
     return pubpen
 
 
@@ -96,7 +105,7 @@ class TestPubPenPublish:
 
         assert pubpen.loop.call_soon.called is True
         assert pubpen.loop.call_soon.call_count == 1
-        assert 'handler1' in pubpen.loop.call_soon.call_args[0]
+        assert handler1() in pubpen.loop.call_soon.call_args[0][0]()
 
     def test_multi_callbacks(self, pubpen):
         result = pubpen.publish('test_event2')
@@ -105,7 +114,7 @@ class TestPubPenPublish:
         assert pubpen.loop.call_soon.called is True
         assert pubpen.loop.call_soon.call_count == 2
         for call in pubpen.loop.call_soon.call_args_list:
-            assert 'handler2' in call[0] or 'handler3' in call[0]
+            assert handler2() in call[0][0]() or handler3() in call[0][0]()
         assert pubpen.loop.call_soon.call_args_list[0][0] != pubpen.loop.call_soon.call_args_list[1][0]
 
     def test_deallocated_callback(self, pubpen_handlers_dealloc):
@@ -115,7 +124,7 @@ class TestPubPenPublish:
 
         assert pubpenhd.loop.call_soon.called is True
         assert pubpenhd.loop.call_soon.call_count == 1
-        assert 'handler1' in pubpenhd.loop.call_soon.call_args_list[0][0]
+        assert handler1() in pubpenhd.loop.call_soon.call_args_list[0][0][0]()
 
         # Test internals have been updated correctly
         assert len(pubpenhd._event_handlers['test_event1']) == 1
@@ -129,7 +138,7 @@ class TestPubPenPublish:
 
         assert pubpenhpr.loop.call_soon.called is True
         assert pubpenhpr.loop.call_soon.call_count == 1
-        assert 'handler1' in pubpenhpr.loop.call_soon.call_args_list[0][0]
+        assert handler1() in pubpenhpr.loop.call_soon.call_args_list[0][0][0]()
 
         # Test internals have been updated correctly
         assert len(pubpenhpr._event_handlers['test_event1']) == 1

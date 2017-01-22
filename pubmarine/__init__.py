@@ -26,6 +26,7 @@ __version_info__ = ('0', '4')
 
 import warnings
 from collections import defaultdict
+from functools import partial
 from weakref import WeakMethod, ref
 
 class PubMarineError(Exception):
@@ -155,7 +156,8 @@ class PubPen:
                 # Callback was deleted.  Cleanup the weakref as well
                 removed_sub_ids.append(sub_id)
                 continue
-            self.loop.call_soon(func, *args, **kwargs)
+            func = partial(func, *args, **kwargs)
+            self.loop.call_soon(func)
 
         # Cleanup any handlers that are no longer around
         for sub_id in removed_sub_ids:
