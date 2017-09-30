@@ -100,7 +100,7 @@ class PubPen:
                 message called
 
             If the caller wants the callback to only be called once, it is the
-            caller's responsibility to only subscribe the callbak once.
+            caller's responsibility to only subscribe the callback once.
         """
         if self._event_list and event not in self._event_list:
             raise EventNotFoundError('{} is not a registered event' \
