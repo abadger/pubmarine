@@ -1,0 +1,15 @@
+API Reference
+=============
+
+Exceptions
+----------
+.. autoclass:: pubmarine.PubMarineError
+
+.. autoclass:: pubmarine.EventNotFoundError
+
+
+PubPen Context Object
+---------------------
+
+.. autoclass:: pubmarine.PubPen
+    :members:
