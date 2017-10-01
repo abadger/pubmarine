@@ -5,13 +5,7 @@
 
 import asyncio
 import curses
-import sys
 from functools import partial
-
-try:
-    from socket import socketpair
-except ImportError:
-    from asyncio.windows_utils import socketpair
 
 from pubmarine import PubPen
 
@@ -155,11 +149,11 @@ if __name__ == '__main__':
         user_input = UserInput(pubpen, display)
         try:
             # try Client first
-            connection = loop.create_unix_connection(lambda: TalkProtocol(pubpen), PATH)
+            connection = loop.create_unix_connection(partial(TalkProtocol, pubpen), PATH)
             loop.run_until_complete(connection)
         except ConnectionRefusedError:
             # server
-            connection = loop.create_unix_server(lambda: TalkProtocol(pubpen), PATH)
+            connection = loop.create_unix_server(partial(TalkProtocol, pubpen), PATH)
             loop.run_until_complete(connection)
 
         task = loop.create_task(user_input.await_user_input())
