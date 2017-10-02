@@ -45,8 +45,15 @@ class PubPen:
     """
     A PubPen object coordinates subscription and publication.
 
-    Most programs should create one PubPen instance and then share it between
-    all of the objects that wish to communicate with each other.
+    Use :meth:`PubPen.subscribe` to register callbacks to be invoked when an event is published.
+
+    Use :meth:`PubPen.publish` to publish an event, invoking the callbacks.
+
+    Callbacks will be queued to be executed by the :mod:`asyncio` event loop that is passed into the
+    :class:`PubPen` when it is instantiated.
+
+    .. note:: Most programs should create one PubPen instance and then share it between
+        all of the objects that wish to communicate with each other.
 
     """
     def __init__(self, loop, event_list=None):
