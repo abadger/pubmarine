@@ -13,7 +13,7 @@ Example: Talk
 
 Before the widespread availability of Google Hangouts, Facebook Messenger, Jabber, and AIM there was
 a command for two people logged into the same UNIX computer to talk to each other called
-:command:talk.  We'll create a mini-version of that to illustrate using Pubmarine.
+:command:`talk`.  We'll create a mini-version of that to illustrate using Pubmarine.
 
 First of all, let's take a look at what you should be able to do with the end result.  Here's
 a picture of two terminal windows side-by-side with the talk program running in each one:
