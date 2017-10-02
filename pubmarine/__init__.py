@@ -75,7 +75,10 @@ class PubPen:
 
         self._event_handlers = defaultdict(dict)
 
-    def _id_generator(self):
+    # This has to be a method because the ids increment per-instance.  We don't have to use self
+    # because the generator itself maintains state.
+    def _id_generator(self):  # pylint: disable=no-self-use
+        """Generate a new unique event id on this :class:`PubPen` instance"""
         i = 0
         while True:
             yield i
@@ -185,5 +188,5 @@ class PubPen:
         **Deprecated**: Use publish() instead
         """
         warnings.warn('PubPen.emit() is deprecated.  Use PubPen.publish()'
-                ' instead', DeprecationWarning, stacklevel=2)
+                      ' instead', DeprecationWarning, stacklevel=2)
         self.publish(event, *args, **kwargs)
