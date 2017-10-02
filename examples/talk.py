@@ -64,9 +64,6 @@ class Display:
     async def get_ch(self):
         return await self.pubpen.loop.run_in_executor(None, self.stdscr.getch)
 
-    def get_stdin_data(self, typing_queue):
-        self.pubpen.loop.create_task(typing_queue.put(self.stdscr.getch()))
-
     def show_message(self, message, user):
         # Instead of scrolling, simply stop the program
         if self.current_chat_line >= self.chat_max_y:
@@ -125,14 +122,14 @@ class TalkProtocol(asyncio.Protocol):
 
         self.pubpen.subscribe('outgoing', self.send_message)
 
+    def send_message(self, message):
+        self.transport.write(message.encode('utf-8'))
+
     def connection_made(self, transport):
         self.transport = transport
 
     def data_received(self, data):
         self.pubpen.publish('incoming', data.decode('utf-8', errors='replace'), "<you>")
-
-    def send_message(self, message):
-        self.transport.write(message.encode('utf-8'))
 
     def error_received(self, exc):
         self.pubpen.publish('error', exc)
