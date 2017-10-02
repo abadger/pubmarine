@@ -239,9 +239,15 @@ Callbacks
 
 The majority of the methods inside of :class:`Display` are callbacks.
 
+[to be finished]
+
 User Interaction
 ~~~~~~~~~~~~~~~~
+[to be finished]
 
+* :meth:`Display.get_ch`
+* :class:`UserInput`
+* :meth:`UserInput.await_user-input`
 
 Complete Source
 ~~~~~~~~~~~~~~~
