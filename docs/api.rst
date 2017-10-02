@@ -1,6 +1,8 @@
 API Reference
 =============
 
+.. automodule:: pubmarine
+
 Exceptions
 ----------
 .. autoclass:: pubmarine.PubMarineError

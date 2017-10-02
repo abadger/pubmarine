@@ -41,7 +41,7 @@ example program:
 We have :mod:`asyncio`, of course, so that we can multitask between our IO operations and waiting
 for user input.  :mod:`curses` handles drawing onto the terminal. :func:`functools.partial` is
 a handy utility function that we'll see in action in just a moment.  And from pubmarine, we just
-need its workhorse, :class:`PubPen`.
+need its workhorse, :class:`~pubmarine.PubPen`.
 
 Most of the heavy lifting in this program will be done by :mod:`asyncio` and :mod:`curses`.
 :mod:`pubmarine` is a communication channel that will let those two major parts communicate with
