@@ -21,13 +21,15 @@ PubMarine is a simple PubSub framework for Python3's asyncio.
 Authors: Toshio Kuratomi <toshio@fedoraproject.org
 """
 
-__version__ = '0.4.1'
-__version_info__ = ('0', '4', '1')
-
 import warnings
 from collections import defaultdict
 from functools import partial
 from weakref import WeakMethod, ref
+
+
+__version__ = '0.4.1'
+__version_info__ = ('0', '4', '1')
+
 
 class PubMarineError(Exception):
     """ Base of all errors specific to PubMarine
@@ -113,8 +115,8 @@ class PubPen:
             caller's responsibility to only subscribe the callback once.
         """
         if self._event_list and event not in self._event_list:
-            raise EventNotFoundError('{} is not a registered event' \
-                    .format(event))
+            raise EventNotFoundError('{} is not a registered event'
+                                     .format(event))
 
         # Get an id for the subscription
         sub_id = next(self._next_id)
@@ -155,8 +157,8 @@ class PubPen:
         Other args and keyword args are passed to the callback function.
         """
         if self._event_list and event not in self._event_list:
-            raise EventNotFoundError('{} is not a registered event' \
-                    .format(event))
+            raise EventNotFoundError('{} is not a registered event'
+                                     .format(event))
 
         removed_sub_ids = []
         for sub_id, handler in self._event_handlers[event].items():
