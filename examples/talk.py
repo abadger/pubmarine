@@ -62,7 +62,9 @@ class Display:
         return False
 
     async def get_ch(self):
-        return await self.pubpen.loop.run_in_executor(None, self.stdscr.getch)
+        while True:
+            char = chr(await self.pubpen.loop.run_in_executor(None, self.stdscr.getch))
+            self.pubpen.publish('typed', char)
 
     def show_message(self, message, user):
         # Instead of scrolling, simply stop the program
@@ -105,16 +107,6 @@ class Display:
         self.error_buffer.addstr(0, 0, str(exc).encode('utf-8'))
         self.error_buffer.refresh()
 
-class UserInput:
-    def __init__(self, pubpen, display):
-        self.pubpen = pubpen
-        self.display = display
-
-    async def await_user_input(self):
-        while True:
-            char = chr(await self.display.get_ch())
-            self.pubpen.publish('typed', char)
-
 
 class TalkProtocol(asyncio.Protocol):
     def __init__(self, pubpen):
@@ -138,12 +130,12 @@ class TalkProtocol(asyncio.Protocol):
         self.pubpen.publish('conn_lost', exc)
         self.pubpen.loop.stop()
 
+
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     pubpen = PubPen(loop)
 
     with Display(pubpen) as display:
-        user_input = UserInput(pubpen, display)
         try:
             # try Client first
             connection = loop.create_unix_connection(partial(TalkProtocol, pubpen), PATH)
@@ -153,7 +145,7 @@ if __name__ == '__main__':
             connection = loop.create_unix_server(partial(TalkProtocol, pubpen), PATH)
             loop.run_until_complete(connection)
 
-        task = loop.create_task(user_input.await_user_input())
+        task = loop.create_task(display.get_ch())
         loop.run_forever()
         task.cancel()
         try:

@@ -245,13 +245,72 @@ to us from a Pubmarine standpoint is :meth:`Display.show_typing`.  :meth:`~Displ
 called whenever a character is typed.  How is that achieved?  To find that out, we have to trace
 a bit of code from the toplevel all the way back into this method.
 
-At the toplevel, our event loop has two things that it runs over.  One of those is the 
+At the toplevel, our event loop has two things that it runs over.  One of those is the
+:class:`Transport <asyncio.BaseTransport>` which :mod:`asyncio` queues to be run by the event loop
+inside of its own code.  We saw the initialization of those earlier.  The other is the routine to
+get user input.  Let's look at that now:
 
-[to be finished]
+.. code-block:: python3
 
-* :meth:`Display.get_ch`
-* :class:`UserInput`
-* :meth:`UserInput.await_user-input`
+    task = loop.create_task(display.get_ch())
+    loop.run_forever()
+
+This code schedules a co-routine from the :class:`Display` class, :meth:`Display.get_ch` for
+execution by the main loop and then runs the main loop.  :meth:`~Display.get_ch` is a short method
+defined like this:
+
+.. code-block:: python3
+
+    async def get_ch(self):
+        while True:
+            char = chr(await self.pubpen.loop.run_in_executor(None, self.stdscr.getch))
+            self.pubpen.publish('typed', char)
+
+This method is an :mod:`asyncio` co-routine which means that this thread of control can be suspended
+while it is waiting for I/O to allow other co-routines to be processed.  Since both this task and
+the :class:`Transport <asyncio.BaseTransport>` task are ultimately waiting on a human typist it
+makes sense that each of them can let the program do other things while they are waiting for that
+slow input.  The method is a short, infinite loop which runs the blocking function,
+:meth:`curses.window.getch` via :meth:`asyncio.AbstractEventLoop.run_in_executor`.
+:meth:`~asyncio.AbstractEventLoop.run_in_executor` runs a blocking function in a thread (or
+subprocess depending on configuration), allowing other co-routines to process while it waits for the
+blocking function to return.
+
+Once the user types a character and the event loop has a chance to execute the
+:meth:`~curses.window.getch` function the method will publish the ``typed`` event via
+:meth:`pubmarine.PubPen.publish`.  This is the event that :meth:`Display.show_typing` is subscribed
+to:
+
+.. code-block:: python3
+
+    self.pubpen.subscribe('typed', self.show_typing)
+
+
+:meth:`~Display.show_typing` itself examines the character being sent to it.  If it determines that
+hte user hit the ``[ENTER]`` key and that the only thing on the line was a ``.`` (period) then it
+will exit the event loop, causing the program to terminate.  Otherwise it will publish the
+``outgoing`` event with the line that the user has entered via :meth:`pubmarine.PubPen.publish`,
+update the chat_log window with the user's text, and then clear the user's input window:
+
+.. code-block:: python3
+
+    def show_typing(self, char):
+        if char == '\n':
+            if self.input_contents == '.':
+                self.pubpen.loop.stop()
+            self.pubpen.publish('outgoing', self.input_contents)
+            self.show_message(self.input_contents, '<myself>')
+            self.clear_typing()
+            return
+
+        self.input_contents += char
+
+        [... Curses calls to update the input window ...]
+
+What happens to the ``outgoing`` event?  If you remember when we talked about the
+:class:`TalkProtocol`` class, the method :meth:`TalkProtocol.send_message` receives that event and
+then sends the message over the socket.
+
 
 Complete Source
 ~~~~~~~~~~~~~~~
@@ -327,10 +386,9 @@ to see it in its entirety:
             return False
 
         async def get_ch(self):
-            return await self.pubpen.loop.run_in_executor(None, self.stdscr.getch)
-
-        def get_stdin_data(self, typing_queue):
-            self.pubpen.loop.create_task(typing_queue.put(self.stdscr.getch()))
+            while True:
+                char = chr(await self.pubpen.loop.run_in_executor(None, self.stdscr.getch))
+                self.pubpen.publish('typed', char)
 
         def show_message(self, message, user):
             # Instead of scrolling, simply stop the program
@@ -373,16 +431,6 @@ to see it in its entirety:
             self.error_buffer.addstr(0, 0, str(exc).encode('utf-8'))
             self.error_buffer.refresh()
 
-    class UserInput:
-        def __init__(self, pubpen, display):
-            self.pubpen = pubpen
-            self.display = display
-
-        async def await_user_input(self):
-            while True:
-                char = chr(await self.display.get_ch())
-                self.pubpen.publish('typed', char)
-
 
     class TalkProtocol(asyncio.Protocol):
         def __init__(self, pubpen):
@@ -390,14 +438,14 @@ to see it in its entirety:
 
             self.pubpen.subscribe('outgoing', self.send_message)
 
+        def send_message(self, message):
+            self.transport.write(message.encode('utf-8'))
+
         def connection_made(self, transport):
             self.transport = transport
 
         def data_received(self, data):
             self.pubpen.publish('incoming', data.decode('utf-8', errors='replace'), "<you>")
-
-        def send_message(self, message):
-            self.transport.write(message.encode('utf-8'))
 
         def error_received(self, exc):
             self.pubpen.publish('error', exc)
@@ -406,12 +454,12 @@ to see it in its entirety:
             self.pubpen.publish('conn_lost', exc)
             self.pubpen.loop.stop()
 
+
     if __name__ == '__main__':
         loop = asyncio.get_event_loop()
         pubpen = PubPen(loop)
 
         with Display(pubpen) as display:
-            user_input = UserInput(pubpen, display)
             try:
                 # try Client first
                 connection = loop.create_unix_connection(partial(TalkProtocol, pubpen), PATH)
@@ -421,12 +469,10 @@ to see it in its entirety:
                 connection = loop.create_unix_server(partial(TalkProtocol, pubpen), PATH)
                 loop.run_until_complete(connection)
 
-            task = loop.create_task(user_input.await_user_input())
+            task = loop.create_task(display.get_ch())
             loop.run_forever()
             task.cancel()
             try:
                 loop.run_until_complete(task)
             except:
                 pass
-
-
