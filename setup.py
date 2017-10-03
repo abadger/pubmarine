@@ -11,6 +11,8 @@ pattern using asyncio.  It is akin to the QT library's signals and slots
 mechanism.  Pubmarine's PubSub is intended for asynchronous signalling within
 an application.  It is not meant for communicating with other programs over
 the network.
+
+Read complete documentation at https://pubmarine.readthedocs.org/
         """,
         author="Toshio Kuratomi",
         author_email="toshio@fedoraproject.org",
