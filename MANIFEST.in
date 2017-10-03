@@ -6,5 +6,5 @@ include test-requirements.txt
 include .coveragerc
 include examples/*
 recursive-include tests/* *.py
-recursive-include docs/*
+recursive-include docs *
 
