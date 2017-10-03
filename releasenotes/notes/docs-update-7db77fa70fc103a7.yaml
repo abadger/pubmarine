@@ -1,0 +1,7 @@
+---
+prelude: >
+        This update just brings documentation to the release tarball.
+other:
+  - Add API docs for :mod:`pubmarine`
+  - Add an example that walks through creating a simplified clone of UNIX talk
+    using :mod:`asyncio` and :mod:`pubmarine`
