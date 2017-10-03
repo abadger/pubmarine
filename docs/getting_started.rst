@@ -59,6 +59,7 @@ us with a helper function that sets up the communication channel to be ready for
 communications so we'll use that instead:
 
 .. code-block:: python3
+
     PATH = '/var/tmp/talk.sock'
 
     loop = asyncio.get_event_loop()
@@ -108,6 +109,7 @@ The TalkProtocol class
 The ``TalkProtocol`` isn't too complicated:
 
 .. code-block:: python3
+
     class TalkProtocol(asyncio.Protocol):
         def __init__(self, pubpen):
             self.pubpen = pubpen
@@ -166,8 +168,8 @@ happen:
     in that list.
 
 
-Giving the User Feedback
-~~~~~~~~~~~~~~~~~~~~~~~~
+Giving Feedback
+~~~~~~~~~~~~~~~
 
 The talk program uses :mod:`curses` to display an interface in the terminal for the user.  All of
 the ``curses`` code is inside of the :class:`Display` class.
@@ -234,15 +236,17 @@ manager exits:
         with Display(pubpen) as display:
             [...]
 
-Callbacks
-^^^^^^^^^
-
-The majority of the methods inside of :class:`Display` are callbacks.
-
-[to be finished]
-
 User Interaction
 ~~~~~~~~~~~~~~~~
+
+The majority of the methods inside of :class:`Display` are callbacks.  They update the curses
+display in response to the events that they are subscribed to.  The one callback that is interesting
+to us from a Pubmarine standpoint is :meth:`Display.show_typing`.  :meth:`~Display.show_typing` is
+called whenever a character is typed.  How is that achieved?  To find that out, we have to trace
+a bit of code from the toplevel all the way back into this method.
+
+At the toplevel, our event loop has two things that it runs over.  One of those is the 
+
 [to be finished]
 
 * :meth:`Display.get_ch`
