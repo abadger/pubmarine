@@ -18,6 +18,7 @@ subscribe one thread of control to a topic and then publish events to the topic 
 
     getting_started
     api
+    release_notes
     development/index
 
 
