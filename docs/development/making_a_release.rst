@@ -15,5 +15,5 @@ Making a Release
 
 * Make sdist
 
-.. reno:: https://docs.openstack.org/reno/latest/user/usage.html
-.. travis:: https://travis-ci.org/abadger/pubmarine
+.. _reno: https://docs.openstack.org/reno/latest/user/usage.html
+.. _travis: https://travis-ci.org/abadger/pubmarine
