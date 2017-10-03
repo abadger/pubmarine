@@ -2,4 +2,5 @@ Release Notes
 =============
 
 .. release-notes::
-    :branch: master
+    :earliest-version: 0.2
+    :collapse-pre-releases:
