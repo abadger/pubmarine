@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+0.4.3
+=======
+
+Other Notes
+-----------
+
+- 0.4.2 had various bugs in building docs on readthedocs.org.  Since this release is all about docs, we spun a new one with fixes.
+
+
 0.4.2
 =====
 
