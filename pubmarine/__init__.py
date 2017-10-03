@@ -27,8 +27,8 @@ from functools import partial
 from weakref import WeakMethod, ref
 
 
-__version__ = '0.4.1'
-__version_info__ = ('0', '4', '1')
+__version__ = '0.4.2'
+__version_info__ = ('0', '4', '2')
 
 
 class PubMarineError(Exception):
