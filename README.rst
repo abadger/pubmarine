@@ -26,6 +26,7 @@ Simple Example
 
 Here's a very simple example to get you started::
 
+.. code:: python
 
     #!/usr/bin/python3 -tt
 
