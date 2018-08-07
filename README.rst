@@ -24,7 +24,7 @@ In IO bound code.
 Simple Example
 ==============
 
-Here's a very simple example to get you started::
+Here's a very simple example to get you started:
 
 .. code:: python
 
