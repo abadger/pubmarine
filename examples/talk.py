@@ -140,7 +140,7 @@ if __name__ == '__main__':
             # try Client first
             connection = loop.create_unix_connection(partial(TalkProtocol, pubpen), PATH)
             loop.run_until_complete(connection)
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, FileNotFoundError):
             # server
             connection = loop.create_unix_server(partial(TalkProtocol, pubpen), PATH)
             loop.run_until_complete(connection)
