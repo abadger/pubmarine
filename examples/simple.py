@@ -26,7 +26,7 @@ class Server:
         self.pubpen.loop.call_later(1, self.heartbeat)
 
     def heartbeat(self):
-        self.pubpen.emit('server_msg', self.beats)
+        self.pubpen.publish('server_msg', self.beats)
         self.beats += 1
         self.pubpen.loop.call_later(1, self.heartbeat)
 

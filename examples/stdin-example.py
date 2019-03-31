@@ -17,10 +17,10 @@ class Server:
         self.pubpen.subscribe('incoming', self.broadcast)
 
     def broadcast(self, message):
-        self.pubpen.emit('outgoing', message)
+        self.pubpen.publish('outgoing', message)
 
     def heartbeat(self):
-        self.pubpen.emit('outgoing', self.beats)
+        self.pubpen.publish('outgoing', self.beats)
         self.beats += 1
         self.pubpen.loop.call_later(1, self.heartbeat)
 
@@ -41,7 +41,7 @@ class Client:
             if message.strip() == '.':
                 self.pubpen.loop.stop()
                 break
-            self.pubpen.emit('incoming', message)
+            self.pubpen.publish('incoming', message)
 
 
 def get_stdin_data(loop, queue):
