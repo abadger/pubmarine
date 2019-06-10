@@ -2,15 +2,18 @@
 #
 # Copyright: 2017, Toshio Kuratomi
 # License: MIT
-
+"""
+An example implementing a very simple chat application.
+"""
 import asyncio
 import curses
+import os.path
 from functools import partial
 
 from pubmarine import PubPen
 
 
-PATH = '/var/tmp/talk.sock'
+PATH = os.path.expanduser('~/talk.sock')
 
 class Display:
     def __init__(self, pubpen):
@@ -150,5 +153,5 @@ if __name__ == '__main__':
         task.cancel()
         try:
             loop.run_until_complete(task)
-        except:
-            pass
+        finally:
+            loop.close()

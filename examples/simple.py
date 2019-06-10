@@ -2,7 +2,10 @@
 #
 # Copyright: 2016, Toshio Kuratomi
 # License: MIT
-
+"""
+Simple example of one logical thread of control emitting periodic events while another logical
+thread of control watches and echoes data about those events
+"""
 import asyncio
 from pubmarine import PubPen
 
@@ -11,7 +14,8 @@ class Client:
         self.pubpen = pubpen
         self.pubpen.subscribe('server_msg', self.display)
 
-    def display(self, message):
+    @staticmethod
+    def display(message):
         print(message)
 
     async def send_message(self):

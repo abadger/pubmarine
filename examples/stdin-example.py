@@ -2,6 +2,9 @@
 #
 # Copyright: 2016, Toshio Kuratomi
 # License: MIT
+"""
+A continuation of simple.py that adds parallel reading from stdin to the example.
+"""
 
 import asyncio
 import sys
@@ -31,7 +34,8 @@ class Client:
         self.input = input_queue
         self.pubpen.subscribe('outgoing', self.display)
 
-    def display(self, message):
+    @staticmethod
+    def display(message):
         print(message)
 
     @asyncio.coroutine
