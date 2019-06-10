@@ -1,0 +1,8 @@
+---
+other:
+  - |
+    Enable mypy type checking for pubmarine.  This required a small change to
+    how we checked whether to use a WeakMethod or WeakFunction for event handlers
+    as mypy did not understand using try-except to differentiate between the need
+    for methods and the need for functions but it could understand an isinstance
+    check.

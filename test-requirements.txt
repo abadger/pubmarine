@@ -1,4 +1,9 @@
 coveralls
+codacy-coverage
 pytest
 pytest-asyncio
 pytest-cov
+# Dependency of mypy.  We need a fix for python-3.8 compat in ast_typed > 1.4.1
+typed-ast -e git+https://github.com/python/typed_ast#egg=typed-ast; python_version >= '3.8'
+typed-ast; python_version < '3.8'
+mypy

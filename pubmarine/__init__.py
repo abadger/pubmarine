@@ -21,9 +21,12 @@ PubMarine is a simple PubSub framework for Python3's asyncio.
 Authors: Toshio Kuratomi <toshio@fedoraproject.org
 """
 
+import asyncio
 import warnings
 from collections import defaultdict
 from functools import partial
+import types
+from typing import Any, Callable, DefaultDict as DefaultDict_t, Dict, Generator, List, Union
 from weakref import WeakMethod, ref
 
 
@@ -58,7 +61,7 @@ class PubPen:
         all of the objects that wish to communicate with each other.
 
     """
-    def __init__(self, loop, event_list=None):
+    def __init__(self, loop: asyncio.AbstractEventLoop, event_list: List[str] = None) -> None:
         """
         :arg loop: Event loop (asyncio compatible) to use.
         :kwarg event_list: If given, event_list is a list of allowed
@@ -68,25 +71,25 @@ class PubPen:
         """
         self.loop = loop
         self._next_id = self._id_generator()
-        self._subscriptions = {}
+        self._subscriptions = {}  # type: Dict
 
         if event_list is not None:
             self._event_list = frozenset(event_list)
         else:
             self._event_list = frozenset()
 
-        self._event_handlers = defaultdict(dict)
+        self._event_handlers = defaultdict(dict)  # type: DefaultDict_t[str, Dict]
 
     # This has to be a method because the ids increment per-instance.  We don't have to use self
     # because the generator itself maintains state.
-    def _id_generator(self):  # pylint: disable=no-self-use
+    def _id_generator(self) -> Generator[int, None, None]:  # pylint: disable=no-self-use
         """Generate a new unique event id on this :class:`PubPen` instance"""
         i = 0
         while True:
             yield i
             i += 1
 
-    def subscribe(self, event, callback):
+    def subscribe(self, event: str, callback: Union[Callable[..., Any], types.MethodType]) -> int:
         """ Subscribe a callback to an event
 
         :arg event: String name of an event to subscribe to
@@ -122,16 +125,16 @@ class PubPen:
         sub_id = next(self._next_id)
 
         self._subscriptions[sub_id] = event
-        try:
+        if isinstance(callback, types.MethodType):
             # Add a method
             self._event_handlers[event][sub_id] = WeakMethod(callback)
-        except TypeError:
+        else:
             # Add a function
             self._event_handlers[event][sub_id] = ref(callback)
 
         return sub_id
 
-    def unsubscribe(self, sub_id):
+    def unsubscribe(self, sub_id: int) -> None:
         """Unsubscribe from an event.
 
         :arg sub_id: The subscription id returned from subscribe.
@@ -149,7 +152,7 @@ class PubPen:
 
         del self._subscriptions[sub_id]
 
-    def publish(self, event, *args, **kwargs):
+    def publish(self, event: str, *args: Any, **kwargs: Any) -> None:
         """ Publish an event
 
         :arg event: String name of an event to publish
@@ -180,7 +183,7 @@ class PubPen:
                 # It's okay.  We just want this gone.
                 pass
 
-    def emit(self, event, *args, **kwargs):
+    def emit(self, event: str, *args: Any, **kwargs: Any) -> None:
         """ Publish an event
 
         :arg event: String name of an event to publish
