@@ -1,6 +1,9 @@
 .. image:: https://travis-ci.org/abadger/pubmarine.svg?branch=master
     :target: https://travis-ci.org/abadger/pubmarine
 
+.. image:: https://api.codacy.com/project/badge/Grade/409d53c39e3a4b229d4aa64678e4a444
+    :target: https://www.codacy.com/app/abadger/pubmarine?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=abadger/pubmarine&amp;utm_campaign=Badge_Grade
+
 .. image:: https://coveralls.io/repos/github/abadger/pubmarine/badge.svg?branch=master
     :target: https://coveralls.io/github/abadger/pubmarine?branch=master
 
