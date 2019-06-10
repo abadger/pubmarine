@@ -8,12 +8,18 @@ An example implementing a very simple chat application.
 import asyncio
 import curses
 import os.path
+import sys
 from functools import partial
 
 from pubmarine import PubPen
 
 
+# Python-3.7 introduced a new asyncio API.  The following code shows both
+# pre-3.7 and post-3.7 coding style
+PY37 = sys.version_info >= (3, 7)
+
 PATH = os.path.expanduser('~/talk.sock')
+
 
 class Display:
     def __init__(self, pubpen):
@@ -65,9 +71,8 @@ class Display:
         return False
 
     async def get_ch(self):
-        while True:
-            char = chr(await self.pubpen.loop.run_in_executor(None, self.stdscr.getch))
-            self.pubpen.publish('typed', char)
+        char = chr(await self.pubpen.loop.run_in_executor(None, self.stdscr.getch))
+        self.pubpen.publish('typed', char)
 
     def show_message(self, message, user):
         # Instead of scrolling, simply stop the program
@@ -89,6 +94,7 @@ class Display:
         if char == '\n':
             if self.input_contents == '.':
                 self.pubpen.loop.stop()
+                return
             self.pubpen.publish('outgoing', self.input_contents)
             self.show_message(self.input_contents, '<myself>')
             self.clear_typing()
@@ -134,24 +140,42 @@ class TalkProtocol(asyncio.Protocol):
         self.pubpen.loop.stop()
 
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
+async def start():
+    if PY37:
+        loop = asyncio.get_running_loop()
+    else:
+        loop = asyncio.get_event_loop()
+
     pubpen = PubPen(loop)
 
     with Display(pubpen) as display:
         try:
             # try Client first
             connection = loop.create_unix_connection(partial(TalkProtocol, pubpen), PATH)
-            loop.run_until_complete(connection)
+            await connection
         except (ConnectionRefusedError, FileNotFoundError):
             # server
             connection = loop.create_unix_server(partial(TalkProtocol, pubpen), PATH)
-            loop.run_until_complete(connection)
+            await connection
 
-        task = loop.create_task(display.get_ch())
-        loop.run_forever()
-        task.cancel()
-        try:
-            loop.run_until_complete(task)
-        finally:
-            loop.close()
+        while True:
+            await display.get_ch()
+
+
+def main():
+    # Note: there doesn't appear to be a way to get asyncio.run() to cancel all the tasks so there's
+    # not a nicer python-3.7 version of this startup
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(start())
+    except RuntimeError:
+        # asyncio complains that the start() task hasn't had a chance to complete when stop() is
+        # called.  Go ahead and cancel all the tasks.
+        for task in asyncio.Task.all_tasks():
+            task.cancel()
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+
+
+if __name__ == '__main__':
+    main()
