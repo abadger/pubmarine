@@ -34,7 +34,21 @@ Here's a very simple example to get you started:
     #!/usr/bin/python3 -tt
 
     import asyncio
+    import sys
     from pubmarine import PubPen
+
+    PY37 = sys.version_info >= (3, 7)
+
+    class Server:
+        def __init__(self, pubpen):
+            self.pubpen = pubpen
+            self.beats = 0
+
+        async def heartbeat(self):
+            self.pubpen.publish('server_msg', self.beats)
+            self.beats += 1
+            await asyncio.sleep(1)
+            self.pubpen.loop.create_task(self.heartbeat())
 
     class Client:
         def __init__(self, pubpen):
@@ -49,24 +63,22 @@ Here's a very simple example to get you started:
                 print('message: {}'.format(num))
                 await asyncio.sleep(2)
 
-    class Server:
-        def __init__(self, pubpen):
-            self.pubpen = pubpen
-            self.beats = 0
-            self.pubpen.loop.call_later(1, self.heartbeat)
-
-        def heartbeat(self):
-            self.pubpen.emit('server_msg', self.beats)
-            self.beats += 1
-            self.pubpen.loop.call_later(1, self.heartbeat)
-
-    if __name__ == '__main__':
-        loop = asyncio.get_event_loop()
+    async def start():
+        if PY37:
+            loop = asyncio.get_running_loop()
+        else:
+            loop = asyncio.get_event_loop()
         pubpen = PubPen(loop)
         server = Server(pubpen)
         client = Client(pubpen)
-        loop.run_until_complete(client.send_message())
-        loop.close()
+        await asyncio.wait((client.send_message(), server.heartbeat()))
+
+    if __name__ == '__main__':
+        if PY37:
+            asyncio.run(start())
+        else:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(start())
 
 In this example, the server class emits the ``server_msg`` event once
 a second (provided that other coroutines give up control for it to do so.)
