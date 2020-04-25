@@ -1,11 +1,12 @@
 language: python
-sudo: required
-dist: xenial
+#sudo: required
+dist: bionic
 python:
   - "3.5"
   - "3.6"
   - "3.7"
-  - "3.8-dev"
+  - "3.8"
+  - "pypy3"
 install:
   python -m pip install --upgrade -r test-requirements.txt
 script:
