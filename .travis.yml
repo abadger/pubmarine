@@ -6,7 +6,11 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "pypy3"
+addons:
+  sonarcloud:
+    organization: "abadger"
+    token:
+      secure: "BIgGhoTsdK3xgmkEzTVcntEgT7nmyTNz+t0eA7P/KIJogQY/9d5itKxH/Yog83Uod5CAZ/Cy/kgnAcAjeAtp3DRdcQpxrcmpAga01RJBjKmyKoFio7BRazkL+x4/cSOilP8+PLjiGB30APeE8bUgxcImZT0CnZCdE6o5BQwPPdHqzrAu0EZQn/sA+T0CiF30s6jbcmAYav49tLoyTbiLZI1mkWyAvCUQKg6ZXyJWRKFv6Iihi5KNz2b+qrmvh1Ry5IAImCuxJbvjYE3DrnXU3YEIrfuUVkMJadNUflcn4pGM89JbWZJu6ntY0TGs5mXdWy/uBUl1vATeoEuCDmtodm0wRGlVS622Q4OLyg4/yZnca44UPScE+pkLlzu3L/cpFDslsE1e8JCqj3V1TyjH2v8hyBPCyAw+FfU791KtTMWyDAcI1kTrHbEiRV8kzuCSVwNUuikX50l7p6YkjNWoItzAaknuGlpZ5crCESKVTyCAtTDy5rXRdUE2HY3h+4qZD/Hcel3gDbj/YYGllV2WfceVHRqHcPjCiK+02n032Je+PJhXJGbI7eRt3wSxJOVemhg3UNLrQcYhdDrE44dFjQ3GmBUWfF2u0lDOgRlbc5RBRSUzY0d4UCgkjLgRT/NC2q4vORqlcVpR5g1XTVLPu3ds46aodoRvHMNt5LaZQL4="
 install:
   python -m pip install --upgrade -r test-requirements.txt
 script:
@@ -14,4 +18,6 @@ script:
   - python -m pip install --upgrade -e . && python -m mypy pubmarine
 after_success:
   - coveralls
+  - codecov
   - coverage xml && python-codacy-coverage -r coverage.xml
+  - sonar-scanner
